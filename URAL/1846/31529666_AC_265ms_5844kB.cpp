@@ -1,0 +1,40 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int segTree[400007];
+set < pair < int, int > > preadd;
+
+void update(int idx, int left, int right, int x, int val){
+    if(left > x or right < x) return;
+    if(left == x and right == x){
+        segTree[idx] = val;
+        return;
+    }
+    
+    update((idx << 1), left, ((left+right) >> 1), x, val);
+    update((idx << 1)+1, ((left+right) >> 1)+1, right, x, val);
+
+    if(segTree[(idx << 1)] == 0) segTree[idx] = segTree[(idx << 1)+1];
+    else if(segTree[(idx << 1)+1] == 0) segTree[idx] = segTree[(idx << 1)];
+    else segTree[idx] = __gcd(segTree[(idx << 1)], segTree[(idx << 1)+1]);
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);cin.tie(nullptr);cout.tie(nullptr);
+
+    char ch; int q, val; cin >> q;
+    for(int i = 1; i <= q; i++){
+        cin >> ch >> val;
+        if(ch == '+'){
+            update(1, 1, q, i, val);
+            preadd.insert({val, i});
+        }
+        else{
+            auto it = preadd.lower_bound({val,1});
+            update(1, 1, q, it -> second, 0);
+            preadd.erase(it);
+        }
+        cout << ((segTree[1] == 0) ? 1: segTree[1]) << endl;
+    }
+    return 0;
+}
